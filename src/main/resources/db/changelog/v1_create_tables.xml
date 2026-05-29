@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="1" author="vinegaraflow">
+        <!-- 1. Таблица users -->
+        <createTable tableName="users">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_users"/>
+            </column>
+            <column name="username" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="email" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(50)"/>
+            <column name="last_name" type="VARCHAR(50)"/>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+
+        <!-- 2. Таблица roles -->
+        <createTable tableName="roles">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_roles"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <!-- 3. Таблица user_roles (связь many-to-many) -->
+        <createTable tableName="user_roles">
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="user_roles" columnNames="user_id, role_id" constraintName="pk_user_roles"/>
+        <addForeignKeyConstraint baseTableName="user_roles" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_user_roles_user" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="user_roles" baseColumnNames="role_id"
+                                 referencedTableName="roles" referencedColumnNames="id"
+                                 constraintName="fk_user_roles_role" onDelete="CASCADE"/>
+
+        <!-- 4. Таблица projects -->
+        <createTable tableName="projects">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_projects"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="start_date" type="DATE"/>
+            <column name="end_date" type="DATE"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="owner_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="projects" baseColumnNames="owner_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_projects_owner" onDelete="CASCADE"/>
+
+        <!-- 5. Таблица project_members -->
+        <createTable tableName="project_members">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_project_members"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="project_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="joined_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="project_members" columnNames="user_id, project_id" constraintName="uk_project_members_user_project"/>
+        <addForeignKeyConstraint baseTableName="project_members" baseColumnNames="user_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_project_members_user" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="project_members" baseColumnNames="project_id"
+                                 referencedTableName="projects" referencedColumnNames="id"
+                                 constraintName="fk_project_members_project" onDelete="CASCADE"/>
+
+        <!-- 6. Таблица tasks -->
+        <createTable tableName="tasks">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_tasks"/>
+            </column>
+            <column name="title" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="status" type="VARCHAR(30)" defaultValue="TODO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="VARCHAR(20)" defaultValue="MEDIUM">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deadline" type="DATE"/>
+            <column name="project_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assignee_id" type="BIGINT"/>
+            <column name="created_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="tasks" baseColumnNames="project_id"
+                                 referencedTableName="projects" referencedColumnNames="id"
+                                 constraintName="fk_tasks_project" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="tasks" baseColumnNames="assignee_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_tasks_assignee" onDelete="SET NULL"/>
+        <addForeignKeyConstraint baseTableName="tasks" baseColumnNames="created_by"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_tasks_created_by" onDelete="CASCADE"/>
+
+        <!-- 7. Таблица comments -->
+        <createTable tableName="comments">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_comments"/>
+            </column>
+            <column name="text" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="task_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="comments" baseColumnNames="task_id"
+                                 referencedTableName="tasks" referencedColumnNames="id"
+                                 constraintName="fk_comments_task" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="comments" baseColumnNames="author_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_comments_author" onDelete="CASCADE"/>
+
+        <!-- 8. Таблица attachments -->
+        <createTable tableName="attachments">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_attachments"/>
+            </column>
+            <column name="file_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_path" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_type" type="VARCHAR(100)"/>
+            <column name="file_size" type="BIGINT"/>
+            <column name="task_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uploader_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uploaded_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="attachments" baseColumnNames="task_id"
+                                 referencedTableName="tasks" referencedColumnNames="id"
+                                 constraintName="fk_attachments_task" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="attachments" baseColumnNames="uploader_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_attachments_uploader" onDelete="CASCADE"/>
+
+        <!-- 9. Таблица notifications -->
+        <createTable tableName="notifications">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="pk_notifications"/>
+            </column>
+            <column name="recipient_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(50)"/>
+            <column name="is_read" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="notifications" baseColumnNames="recipient_id"
+                                 referencedTableName="users" referencedColumnNames="id"
+                                 constraintName="fk_notifications_recipient" onDelete="CASCADE"/>
+
+        <!-- Индексы для оптимизации -->
+        <createIndex tableName="tasks" indexName="idx_tasks_project_id">
+            <column name="project_id"/>
+        </createIndex>
+        <createIndex tableName="tasks" indexName="idx_tasks_assignee_id">
+            <column name="assignee_id"/>
+        </createIndex>
+        <createIndex tableName="tasks" indexName="idx_tasks_status">
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="comments" indexName="idx_comments_task_id">
+            <column name="task_id"/>
+        </createIndex>
+        <createIndex tableName="attachments" indexName="idx_attachments_task_id">
+            <column name="task_id"/>
+        </createIndex>
+        <createIndex tableName="notifications" indexName="idx_notifications_recipient_id">
+            <column name="recipient_id"/>
+        </createIndex>
+        <createIndex tableName="notifications" indexName="idx_notifications_is_read">
+            <column name="is_read"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

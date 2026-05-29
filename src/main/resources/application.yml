@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: vinegaraflow
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/vinegaradb}
+    username: ${SPRING_DATASOURCE_USERNAME:vinegara}
+    password: ${SPRING_DATASOURCE_PASSWORD:0000}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+    enabled: true
+  security:
+    jwt:
+      secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      expiration: 86400000
+
+logging:
+  level:
+    com.vinegaraflow: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+  file:
+    name: logs/vinegaraflow.log
+    max-size: 10MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  upload:
+    dir: uploads
