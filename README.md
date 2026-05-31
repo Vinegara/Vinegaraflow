@@ -116,5 +116,5 @@ HTML-отчет JaCoCo после запуска находится в `target/s
 - `/api/project-members` - участники проектов
 - `/api/admin/users` - пользователи, только admin
 - `/api/admin/roles` - роли, только admin
-- `/actuator/health` - состояние приложения
+- `/actuator/health` - состояние приложения.
 
